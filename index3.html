@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>no quiero seguir haciendo esto</title>
+    <style>
+        
+        /* Fondo general */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF; /* Fondo blanco */
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Barra superior */
+        .top-bar {
+            background-color: #E0E0E0;
+            padding: 8px 20px;
+            margin: 10px 15px;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: left;
+            border-radius: 5px;
+        }
+
+        .top-bar a {
+            text-decoration: none;
+            color: #0066CC;
+            margin-right: 10px;
+        }
+
+        /* Contenedor de la sección azul */
+        .section-title {
+            margin: 20px 15px 0;
+            position: relative;
+        }
+
+        /* Rectángulo pequeño blanco con borde gris */
+        .section-title .small-rect {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            margin: 0 auto;
+            height: 8px;
+            background-color: #FFFFFF;
+            border: 1px solid #D3D3D3;
+            border-radius: 5px;
+            width: calc(100% - 30px);
+        }
+
+        /* Rectángulo azul con texto amarillo */
+        .section-title .blue-background {
+            background-color: #0066CC;
+            color: #FFFF00;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            font-size: 18px;
+            margin: 0 15px; /* Espaciado horizontal similar al blanco */
+
+        }
+
+        /* Contenedor de la cuadrícula */
+        .grid-container {
+            display: flex;
+            flex-wrap: wrap; /* Permite que las celdas pasen a una nueva fila si es necesario */
+            gap: 20px; /* Espacio vertical entre filas */
+            column-gap: 30px; /* Espacio horizontal entre celdas */
+            justify-content: center; /* Centrar las celdas horizontalmente */
+            max-width: 1200px; /* Limitar ancho */
+            margin: 40px auto; /* Centrado */
+            padding: 10px;
+        }
+
+        /* Contenedor de la celda */
+        .cell {
+            width: 250px; /* Ajusta el ancho de la celda */
+            border: 1px solid #D3D3D3;
+            border-radius: 5px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Cuadrado gris superior */
+        .cell-top {
+            background-color: #E0E0E0;
+            height: 120px;
+            position: relative;
+        }
+
+        /* Círculo azul con el icono */
+        .icon-circle {
+            background-color: #0066CC;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .icon-circle i {
+            color: #FFFFFF;
+            font-size: 24px;
+        }
+
+        /* Cuadrado inferior con texto */
+        .cell-bottom {
+            background-color: #F5F5F5;
+            padding: 15px;
+            text-align: center;
+        }
+
+        /* Título principal */
+        .cell-bottom h3 {
+            margin: 10px 0;
+            font-size: 18px;
+            color: #333333;
+        }
+
+        /* Subtítulo */
+        .cell-bottom p {
+            margin: 0 0 15px;
+            font-size: 14px;
+            color: #777777;
+        }
+
+        /* Botón verde */
+        .button {
+            background-color: #28A745;
+            color: #FFFFFF;
+            padding: 10px 20px;
+            font-size: 14px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .button:hover {
+            background-color: #218838;
+        }
+        
+        .cell-icon {
+            width: 60px; /* Tamaño uniforme para los íconos */
+            height: 60px;
+            object-fit: contain; /* Ajuste para que encaje dentro del círculo */
+            filter: invert(1); /* Invierte completamente los colores */
+        }
+        .flecha {
+            width: 20px; /* Tamaño uniforme para los íconos */
+            height: 20px;
+            object-fit: contain; /* Ajuste para que encaje dentro del círculo */
+            filter: invert(1); /* Invierte completamente los colores */
+        }
+        
+        
+
+    </style>
+</head>
+<body>
+
+<!-- Barra superior -->
+<div class="top-bar">
+<a href="index.html">Inicio</a> / 
+<a href="#">Usuario Administrador</a>
+</div>
+
+<!-- Nueva sección con ajustes -->
+<div class="section-title">
+<!-- Rectángulo pequeño encima -->
+<div class="small-rect"></div>
+<!-- Rectángulo azul con texto -->
+<div class="blue-background">
+    <p>matenme</p>
+</div>
+</div>
+
+<!-- Cuadrícula -->
+<div class="grid-container">
+    <!-- Primer fila de celdas -->
+    <div class="cell">
+        <div class="cell-top">
+            <div class="icon-circle">
+                <img src="./iconos/casa.svg" alt="Icono de casa" class="cell-icon">
+            </div>
+    
+        </div>
+        <div class="cell-bottom">
+            <h3>Listado de Personal</h3>
+            <p>Total de autorizados</p>
+            <button class="button">
+                <img src="./iconos/flecha.svg" alt="Icono de casa" class="flecha">
+                Entrar
+            </button>
+        </div>
+    </div>
+    <div class="cell">
+        <div class="cell-top">
+            <div class="icon-circle"><img src="./iconos/comillas.svg" alt="Icono de casa" class="cell-icon"></div>
+        </div>
+        <div class="cell-bottom">
+            <h3>Carga de Personal</h3>
+            <p>Total de participantes</p>
+            <button class="button">
+                <img src="./iconos/flecha.svg" alt="Icono de casa" class="flecha">
+                Entrar
+            </button>
+        </div>
+    </div>
+    <div class="cell">
+        <div class="cell-top">
+            <div class="icon-circle"><img src="./iconos/pdf.svg" alt="Icono de casa" class="cell-icon"></div>
+        </div>
+        <div class="cell-bottom">
+            <h3>Carga de hijos</h3>
+            <p>Mensajes recibidos</p>
+            <button class="button">
+                <img src="./iconos/flecha.svg" alt="Icono de casa" class="flecha">
+                Entrar
+            </button>
+        </div>
+    </div>
+    <div class="cell">
+        <div class="cell-top">
+            <div class="icon-circle"><img src="./iconos/pdf.svg" alt="Icono de casa" class="cell-icon"></div>
+        </div>
+        <div class="cell-bottom">
+            <h3>Carga de Estudios</h3>
+            <p>mensajes recibidos</p>
+            <button class="button">
+                <img src="./iconos/flecha.svg" alt="Icono de casa" class="flecha">
+                Entrar
+            </button>
+        </div>
+    </div>
+
+    <!-- Segunda fila de celdas -->
+    <div class="cell">
+        <div class="cell-top">
+            <div class="icon-circle"><img src="./iconos/pdf.svg" alt="Icono de casa" class="cell-icon"></div>
+        </div>
+        <div class="cell-bottom">
+            <h3>Carga de Cargos Personal</h3>
+            <p>mensajes recibidos</p>
+            <button class="button">
+                <img src="./iconos/flecha.svg" alt="Icono de casa" class="flecha">
+                Entrar
+            </button>
+        </div>
+    </div>
+    <div class="cell">
+        <div class="cell-top">
+            <div class="icon-circle"><img src="./iconos/pdf.svg" alt="Icono de casa" class="cell-icon"></div>
+        </div>
+        <div class="cell-bottom">
+            <h3>Carga Asignatura Personal</h3>
+            <p>mensajes recibidos</p>
+            <button class="button">
+                <img src="./iconos/flecha.svg" alt="Icono de casa" class="flecha">
+                Entrar
+            </button>
+        </div>
+    </div>
+    <div class="cell">
+        <div class="cell-top">
+            <div class="icon-circle"><img src="./iconos/pdf.svg" alt="Icono de casa" class="cell-icon"></div>
+        </div>
+        <div class="cell-bottom">
+            <h3>Carga de Cargos</h3>
+            <p>mensajes recibidos</p>
+            <button class="button">
+                <img src="./iconos/flecha.svg" alt="Icono de casa" class="flecha">
+                Entrar
+            </button>
+        </div>
+    </div>
+    <div class="cell">
+        <div class="cell-top">
+            <div class="icon-circle"><img src="./iconos/pdf.svg" alt="Icono de casa" class="cell-icon"></div>
+        </div>
+        <div class="cell-bottom">
+            <h3>Carga de Asignatura</h3>
+            <p>mensajes recibidos</p>
+            <button class="button">
+                <img src="./iconos/flecha.svg" alt="Icono de casa" class="flecha">
+                Entrar
+            </button>
+        </div>
+    </div>
+
+    <!-- Última celda centrada -->
+    <div class="cell last-cell">
+        <div class="cell-top">
+            <div class="icon-circle"><img src="./iconos/pdf.svg" alt="Icono de casa" class="cell-icon"></div>
+        </div>
+        <div class="cell-bottom">
+            <h3>Carga de movimientos</h3>
+            <p>mensajes recibidos</p>
+            <button class="button">
+                <img src="./iconos/flecha.svg" alt="Icono de casa" class="flecha">
+                Entrar
+            </button>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
