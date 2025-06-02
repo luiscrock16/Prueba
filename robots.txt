@@ -1,0 +1,4 @@
+plaintext
+   User-agent:*
+   Allow: /
+   Sitemap: https://luiscrock16.github.io/Prueba/sitemap.xml
