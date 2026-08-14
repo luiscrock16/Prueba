@@ -451,6 +451,49 @@
                 }
             }
         }
+        const POOL_SIZE = isMobileDevice() ? 6 : 10;
+        const characterPool = [];
+        
+        // Inicializar la reserva de objetos UNA SOLA VEZ al cargar el juego
+        function initCharacterPool() {
+            const gameContainer = document.getElementById('game-container'); // Tu contenedor del gameplay
+        
+            for (let i = 0; i < POOL_SIZE; i++) {
+                const charDiv = document.createElement('div');
+                charDiv.className = 'game-character-item';
+                charDiv.style.position = 'absolute';
+                charDiv.style.display = 'none'; // Oculto inicialmente
+        
+                // Un único <model-viewer> ligero y permanente por ranura
+                charDiv.innerHTML = `
+                    <model-viewer 
+                        autoplay
+                        interaction-prompt="none"
+                        shadow-intensity="0"
+                        render-scale="0.75"
+                        style="width: 100%; height: 100%;">
+                    </model-viewer>
+                `;
+        
+                gameContainer.appendChild(charDiv);
+        
+                // Guardamos la ranura en el Pool
+                characterPool.push({
+                    element: charDiv,
+                    viewer: charDiv.querySelector('model-viewer'),
+                    inUse: false
+                });
+            }
+        }
+        
+        // Obtener una ranura libre del Pool
+        function getFreeCharacterFromPool() {
+            return characterPool.find(char => !char.inUse) || null;
+        }
+        
+        // Llama a esto al cargar la ventana o iniciar el juego
+        window.addEventListener('DOMContentLoaded', initCharacterPool);
+        
         function unlockAudioSystem() {
             if (isAudioUnlocked) return;
 
@@ -572,19 +615,39 @@
         }
 
         function spawnCharacter() {
-            if (totalCharactersSpawned >= WIN_TARGET) {
-                triggerVictorySequence();
+            // 1. Pedir un personaje disponible en el Pool
+            const pooledChar = getFreeCharacterFromPool();
+        
+            
+            if (!pooledChar) {
+                console.warn("Límite de GPU alcanzado. Esperando a que se elimine un personaje...");
                 return;
             }
-
-            const randomIndex = Math.floor(Math.random() * modelPool.length);
-            const selectedModelData = modelPool[randomIndex];
+        
+            const winModel = winModelPool[Math.floor(Math.random() * winModelPool.length)];
+        
             
-            const newChar = new Character(selectedModelData);
-            activeCharacters.push(newChar);
-            totalCharactersSpawned++;
-
-            playPopSound(1.0);
+            pooledChar.inUse = true;
+            pooledChar.viewer.src = winModel.src;
+            
+            
+            pooledChar.element.style.left = `${Math.random() * 70 + 15}%`;
+            pooledChar.element.style.top = `${Math.random() * 70 + 15}%`;
+            
+            
+            pooledChar.element.style.display = 'block';
+        
+            
+            playVictoryAnimationSequence(pooledChar.viewer, winModel.animations, false);
+        
+            playPopSound();
+        }
+        function recycleCharacter(pooledChar) {
+            if (!pooledChar) return;
+        
+            // Se oculta y queda libre para el siguiente spawn
+            pooledChar.inUse = false;
+            pooledChar.element.style.display = 'none';
         }
 
         function triggerVictorySequence() {
