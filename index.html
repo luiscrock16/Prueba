@@ -1,223 +1,818 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="google-site-verification" content="_f12YcNoqWZpLu0Zi0bQYkS17WfOkKqlDwh_Ju_X2nk" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Grupo 6 Prueba</title>
+    <title>Tu Juego 3D</title>
+
+    
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
+
     <style>
-        /* Quitar márgenes y padding globales */
         * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box; /* Asegura que el tamaño de los elementos incluya borde y padding */
         }
 
-        /* Sección verde lima */
-        .header {
-            background-color: #3399ff;
-            text-align: center;
-            color: #000000;
-            padding: 20px;
-            border: none; /* Quitar bordes */
-        }
-        .header h1 {
-            margin-top: 10px;
-        }
-
-        /* Sección azul oscuro con marquee */
-        .marquee {
-            background-color: #006699;
-            color: #FFFF00;
+        body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background-color: #1e1e28;
             font-family: Arial, sans-serif;
-            font-size: 18px;
-            text-align: center;
-            border: none; /* Quitar bordes */
+            position: relative;
+            user-select: none;
         }
 
-        /* Sección roja con enlaces */
-        .navbar {
-            background-color: #FF0000;
-            padding: 10px;
-            display: flex;
-            justify-content: flex-end; /* Mueve los elementos a la derecha */
-            gap: 20px;
+        #counter {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1;
+            color: rgba(255, 255, 255, 0.08);
+            font-size: 35vw;
+            font-weight: 900;
+            pointer-events: none;
+            line-height: 1;
         }
+
+        .character {
+            position: absolute;
+            cursor: grab;
+            touch-action: none;
+            z-index: 2;
+            transition: transform 0.15s ease, opacity 0.15s ease;
+        }
+
+        .character:active {
+            cursor: grabbing;
+        }
+
+        .character model-viewer {
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .drag-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .bounce-impact {
+            animation: impact 0.25s ease-out;
+        }
+
+        .popping-out {
+            transform: scale(1.4) !important;
+            opacity: 0 !important;
+        }
+
+        @keyframes impact {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+            100% { transform: scale(1); }
+        }
+
         
-        .navbar i {
-            margin-right: auto;
+#victory-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(15, 15, 22, 0.92);
+    backdrop-filter: blur(8px);
+    z-index: 100;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.6s ease;
+    overflow: hidden;
+}
+
+#victory-screen.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.victory-ui-content {
+    position: relative;
+    z-index: 110; 
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    pointer-events: auto;
+}
+
+.victory-title {
+    color: #ffffff;
+    font-size: 2.8rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    margin-bottom: 10px;
+    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+}
+
+.victory-subtitle {
+    color: #a0a0c0;
+    font-size: 1.1rem;
+    margin-bottom: 30px;
+}
+
+
+.victory-char-item {
+    position: absolute;
+    width: 320px;
+    height: 320px;
+    z-index: 105;
+    animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes popIn {
+    0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+    100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}   
+
+        .restart-btn {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: #ffffff;
+            border: none;
+            padding: 14px 32px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
-    
-        .navbar a {
-            display: flex; /* Permite alinear el ícono y el texto */
-            align-items: center; /* Centra los elementos verticalmente */
-            gap: 5px; /* Espacio pequeño entre el ícono y el texto */
-            text-decoration: none; /* Quita el subrayado del enlace */
-            color: white; /* Asegura que el texto sea visible */
-            font-size: 16px; /* Ajusta el tamaño del texto */
+
+        .restart-btn:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 12px 28px rgba(99, 102, 241, 0.6);
         }
-        
-        .navbar i {
-            margin-right: auto; /* Mueve el ícono a la izquierda */
+
+        .restart-btn:active {
+            transform: translateY(1px) scale(0.98);
         }
-        /* Sección contenedora */
-    /* Sección contenedora */
-    .content-section {
-        display: flex; /* Divide en dos columnas */
-        gap: 20px; /* Separación entre columnas */
-        margin-top: 20px; /* Separación de la sección roja */
-        align-items: flex-start; /* Asegurar que los elementos de las columnas empiecen arriba */
-    }
-
-    /* Columna izquierda con imagen */
-    .content-image {
-        width: 50%; /* La imagen ocupa el 50% del ancho */
-        height: 100%; /* Ajusta la altura */
-    }
-
-    /* Columna derecha con texto */
-    .content-text {
-        width: 50%; /* La columna de texto ocupa el otro 50% */
-    }
-
-    /* Texto de introducción y estilo general */
-    .content-text p {
-        margin: 0; /* Quitar márgenes predeterminados */
-        margin-bottom: 10px; /* Añadir separación entre párrafos */
-        font-size: 16px;
-    }
-
-    /* Subtítulos en negrilla */
-    .content-text h2 {
-        font-weight: bold;
-        margin-top: 10px; /* Separación respecto al texto anterior */
-        margin-bottom: 5px; /* Separación respecto a la lista */
-    }
-
-    /* Listas desordenadas */
-    .content-text ul {
-        list-style-type: disc; /* Punto antes de cada texto */
-        margin: 0;
-        margin-bottom: 20px; /* Separación entre listas */
-        padding-left: 20px;
-    }
-
-    /* Footer */
-    .footer {
-        background-color: #003366; /* Azul oscuro */
-        text-align: center; /* Alineación centrada horizontalmente */
-        padding: 15px; /* Espaciado interno */
-        display: flex; /* Muestra los elementos en fila */
-        justify-content: center; /* Asegura que ambos textos estén centrados horizontalmente */
-        gap: 20px; /* Espaciado entre los textos */
-    }
-    .footer p {
-        margin: 0; /* Quita márgenes predeterminados */
-        font-size: 20px;
-    }
-    .footer .rights {
-        color: #FFFFFF; /* Texto blanco */
-    }
-    .footer .info {
-        color: #6699CC; /* Azul más claro */
-    }
-    .icon {
-        width: 30px; /* Tamaño uniforme para los íconos */
-        height: 30px;
-        filter: invert(1); /* Invierte completamente los colores */
-    }
-
-
-
     </style>
 </head>
 <body>
+   <div id="counter">0</div>
 
-    <!-- Sección verde lima -->
-    <div class="header">
-        <p>REPÚBLICA BOLIVARIANA DE VENEZUELA<br>
-        MINISTERIO DEL PODER POPULAR PARA LA DEFENSA<br>
-        UNIVERSIDAD NACIONAL EXPERIMENTAL POLITÉCNICA<br>
-        DE LA FUERZA ARMADA NACIONAL BOLIVARIANA<br>
-        NÚCLEO LA GUAIRA</p>
-        <h1>Realizado por luis</h1>
-    </div>
+        <div id="victory-screen">
+            <div class="victory-ui-content">
+                <button class="restart-btn" id="restart-btn">Otra vez?</button>
+            </div>
+        </div>
 
-    <!-- Sección azul oscuro con texto marquee -->
-    <div class="marquee">
-        <marquee behavior="scroll" direction="left">legolas poooooooooor favor</marquee>
-    </div>
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.3.1/model-viewer.min.js"></script>
 
-    <!-- Sección roja con enlaces -->
-    <div class="navbar">
-        <a href="index2.html">
-            <img src="./iconos/img.svg" class="icon"> 
-            Ingreso
-        </a>
-        <a href="./descargas/gracias por hacer click.zip" download="2">
-            <img src="./iconos/img.svg" class="icon"> 
-            Imágenes
-        </a>
-        <a onclick="playSound()">
-            <img src="./iconos/telefono.svg" class="icon"> 
-            Contacto
-        </a>
-        <!-- Etiqueta de audio oculta -->
-        <audio id="audioPlayer">
-            <source src="./audio/a.mp3" type="audio/mp3">
-        </audio>
-        <!-- Script para reproducir el audio -->
-        <script>
-            function playSound() {
-                var audio = document.getElementById("audioPlayer");
-                audio.play();
+    <script>
+        
+        const modelPool = [
+            { src: 'test2/scene.glb',  scale: 1.0, offsetY: 0 },
+            { src: 'test2/scene2.glb', scale: 2.0, offsetY: 18 },
+            { src: 'test2/scene3.glb', scale: 1.4, offsetY: 40 },
+            { src: 'test2/scene4.glb', scale: 2.0, offsetY: 30 }
+        ];
+
+        
+        const winModelPool = [
+            { 
+                src: 'test2/scene.glb',  
+                scale: 1.2, 
+                offsetX: -20.0,
+                animations: {
+                    entry: 'Dive_Out',        
+                    actionStart: 'DanceIn',  
+                    actionLoop: 'DanceLoop'     
+                }
+            },
+            { 
+                src: 'test2/scene2.glb', 
+                scale: 1.0, 
+                offsetY: 10,
+                animations: {
+                    entry: 'Dive_Out',
+                    actionStart: 'Dance_In',
+                    actionLoop: 'Dance_Loop'
+                }
+            },
+            { 
+                src: 'test2/scene3.glb', 
+                scale: 1.6, 
+                offsetY: -5,
+                animations: {
+                    entry: 'Dive_Out',
+                    actionStart: 'Dance_In',
+                    actionLoop: 'Dance_Loop'
+                }
+            },
+            { 
+                src: 'test2/scene5.glb', 
+                scale: 1.6, 
+                offsetY: -5,
+                animations: {
+                    entry: 'Dive_Out',
+                    actionStart: 'Dance_In',
+                    actionLoop: 'Dance_Loop'
+                }
+            },
+            { 
+                src: 'test2/scene4.glb', 
+                scale: 1.6, 
+                offsetY: -5,
+                animations: {
+                    entry: 'Dive_Out',
+                    actionStart: 'Dance_In',
+                    actionLoop: 'Dance_Loop'
+                }
             }
-        </script>
+        ];
+
+        
+        const WIN_TARGET = 2;
+        let totalCharactersSpawned = 0;
+        let score = 0;
+        let currentTarget = 10;
+        let targetIncrement = 15;
+        let isGameOver = false;
+
+        const counterDisplay = document.getElementById('counter');
+        const victoryScreen = document.getElementById('victory-screen');
+        const victoryModelContainer = document.getElementById('victory-model-container');
+        const restartBtn = document.getElementById('restart-btn');
+        const activeCharacters = [];
+
+        
+        const gravity = 0.45;
+        const frictionX = 0.99;
+        const bounciness = -0.7;
+        const minVelocityForBounce = 3.5;
+        const baseCharSize = 160;
+        
+        
+        let victorySpawnTimer = null;
+        let victoryCharsCount = 0;
+        let victorySound = null;
+        let isAudioUnlocked = false;
+
+        
+        const victoryPositions = [
+            { left: '50%', top: '80%' }, 
+            { left: '18%', top: '30%' }, 
+            { left: '82%', top: '30%' }, 
+            { left: '18%', top: '70%' }, 
+            { left: '82%', top: '70%' }, 
+            { left: '50%', top: '22%' }  
+        ];
 
 
-    </div>
+        class Character {
+            constructor(modelData) {
+                this.modelSrc = modelData.src;
+                this.modelScale = modelData.scale || 1.0; 
+                this.offsetY = modelData.offsetY || 0; 
 
-        <!-- Sección dividida en dos columnas -->
-    <div class="content-section">
-        <!-- Columna izquierda: Imagen -->
-        <div class="content-image">
-            <img src="./imagenes/2.png" alt="Descripción de la imagen" width="100%" height="100%">
-        </div>
+                this.size = baseCharSize * this.modelScale;
 
-        <!-- Columna derecha: Texto -->
-        <div class="content-text">
-            <h2>Lenguaje de Programación II</h2>
+                this.posX = (window.innerWidth - this.size) / 2 + (Math.random() * 80 - 40);
+                this.posY = (window.innerHeight - this.size) / 4;
 
-            <!-- Estudiantes -->
-            <h3>Estudiantes</h3>
-            <ul>
-                <li>Luis Vásquez CI:31.748.686</li>
-                <li>Adonai Alvarado CI:30.225.765</li>
-                <li>Loyner Fernández CI:30.970.022</li>
-                <li>Yhon Vivas CI:31.380.267</li>
-            </ul>
+                this.vx = (Math.random() - 0.5) * 8;
+                this.vy = 0;
 
-            <!-- sobre nosotros -->
-            <h3>Sobre nosotros</h3>
-            <ul>
-                <li>Luis Vásquez: "Soy estudiante de la unefa, vivo en macuto y tengo 19 años, en mis tiempos libres suelo hacer pequeños
-                    proyectos de videojuegos en godot, y actualmente ando aprendiendo a usar blender para modelar escenarios o animar personajes en 3D,
-                    de resto no suelo hacer muchas otras cosas, aprender un poco de cada cosa que vaya a necesitar o cosas que me interesen"
-                </li><br>
-                <li>Adonai Alvarado: "Vivo en La Guaira, tengo 20 años. Me gustan las películas, los videojuegos, leer, el arte. A veces dibujo un poco,
-                     se me da bien. Estudio en la UNEFA y me encanta la programación y la tecnología en general"</li><br>
-                <li>Loyner Fernández: "Soy un chamo que vive en vista al mar, tengo 20 años, estudio en la UNEFA ingeniería de sistemas y estoy cursando el 5to semestre de la carrera,
-                     y como Hobbies me gusta jugar fútbol, jugar videojuegos, me gusta escuchar y componer música, gracias"</li><br>
-                <li>Yhon Vivas: "Tengo 20 años, vivo en la alcabala, soy estudiante de Ingeniería Sistemas en la UNEFA , me gusta jugar videojuegos
-                     y dibujar"</li>
-            </ul>
-        </div>
-    </div>
-    <!-- Footer -->
-    <div class="footer">
-        <p class="rights">&copy;Todos los Derechos Reservados.</p>
-        <p class="info">Estudiantes de Lenguaje de Programación II</p>
-    </div>
+                this.isDragging = false;
+                this.dragOffsetX = 0;
+                this.dragOffsetY = 0;
+                this.lastMouseX = 0;
+                this.lastMouseY = 0;
 
+                this.bouncedX = false;
+                this.bouncedY = false;
+
+                this.createElement();
+                this.bindEvents();
+            }
+
+            createElement() {
+                this.element = document.createElement('div');
+                this.element.className = 'character';
+                
+                this.element.style.width = `${this.size}px`;
+                this.element.style.height = `${this.size}px`;
+                this.element.style.left = `${this.posX}px`;
+                this.element.style.top = `${this.posY}px`;
+
+                this.element.innerHTML = `
+                    <model-viewer 
+                        src="${this.modelSrc}"
+                        autoplay
+                        animation-name="Idle-Base"
+                        interaction-prompt="none"
+                        style="transform: translateY(${this.offsetY}px);">
+                    </model-viewer>
+                    <div class="drag-overlay"></div>
+                `;
+
+                document.body.appendChild(this.element);
+            }
+
+            bindEvents() {
+                this.element.addEventListener('pointerdown', (e) => {
+                    if (isGameOver) return;
+                    this.isDragging = true;
+                    this.element.setPointerCapture(e.pointerId);
+
+                    this.dragOffsetX = e.clientX - this.posX;
+                    this.dragOffsetY = e.clientY - this.posY;
+
+                    this.lastMouseX = e.clientX;
+                    this.lastMouseY = e.clientY;
+
+                    this.vx = 0;
+                    this.vy = 0;
+                });
+
+                this.element.addEventListener('pointermove', (e) => {
+                    if (!this.isDragging || isGameOver) return;
+
+                    this.vx = e.clientX - this.lastMouseX;
+                    this.vy = e.clientY - this.lastMouseY;
+
+                    this.lastMouseX = e.clientX;
+                    this.lastMouseY = e.clientY;
+
+                    this.posX = e.clientX - this.dragOffsetX;
+                    this.posY = e.clientY - this.dragOffsetY;
+
+                    const maxX = window.innerWidth - this.size;
+                    const maxY = window.innerHeight - this.size;
+                    this.posX = Math.max(0, Math.min(this.posX, maxX));
+                    this.posY = Math.max(0, Math.min(this.posY, maxY));
+
+                    this.element.style.left = `${this.posX}px`;
+                    this.element.style.top = `${this.posY}px`;
+                });
+
+                const endDrag = (e) => {
+                    if (!this.isDragging) return;
+                    this.isDragging = false;
+                    try { this.element.releasePointerCapture(e.pointerId); } catch(err){}
+                };
+
+                this.element.addEventListener('pointerup', endDrag);
+                this.element.addEventListener('pointercancel', endDrag);
+            }
+
+            update() {
+                if (isGameOver) return;
+
+                const maxX = window.innerWidth - this.size;
+                const maxY = window.innerHeight - this.size;
+
+                if (!this.isDragging) {
+                    this.vy += gravity;
+                    this.vx *= frictionX;
+
+                    this.posX += this.vx;
+                    this.posY += this.vy;
+
+                    const currentSpeed = Math.hypot(this.vx, this.vy);
+
+                    if (this.posX <= 0 || this.posX >= maxX) {
+                        if (!this.bouncedX && currentSpeed > minVelocityForBounce) {
+                            registerGlobalBounce(this);
+                        }
+                        this.vx *= bounciness;
+                        this.posX = Math.max(0, Math.min(this.posX, maxX));
+                        this.bouncedX = true;
+                    } else {
+                        this.bouncedX = false;
+                    }
+
+                    if (this.posY >= maxY) {
+                        if (!this.bouncedY && Math.abs(this.vy) > minVelocityForBounce) {
+                            registerGlobalBounce(this);
+                        }
+                        this.vy *= bounciness;
+                        this.posY = maxY;
+
+                        if (Math.abs(this.vy) < 1) this.vy = 0;
+                        this.bouncedY = true;
+                    } 
+                    else if (this.posY <= 0) {
+                        if (!this.bouncedY && Math.abs(this.vy) > minVelocityForBounce) {
+                            registerGlobalBounce(this);
+                        }
+                        this.vy *= bounciness;
+                        this.posY = 0;
+                        this.bouncedY = true;
+                    } else {
+                        this.bouncedY = false;
+                    }
+
+                    this.element.style.left = `${this.posX}px`;
+                    this.element.style.top = `${this.posY}px`;
+                }
+            }
+
+            triggerBounceEffect() {
+                this.element.classList.remove('bounce-impact');
+                void this.element.offsetWidth;
+                this.element.classList.add('bounce-impact');
+            }
+
+            popOut() {
+                this.element.classList.add('popping-out');
+                setTimeout(() => {
+                    if (this.element && this.element.parentNode) {
+                        this.element.parentNode.removeChild(this.element);
+                    }
+                }, 150);
+            }
+
+            destroyImmediately() {
+                if (this.element && this.element.parentNode) {
+                    this.element.parentNode.removeChild(this.element);
+                }
+            }
+        }
+        function unlockAudioSystem() {
+            if (isAudioUnlocked) return;
+
+            
+            const testAudio = new Audio('sas.mp3');
+            testAudio.volume = 0.01;
+
+            testAudio.play().then(() => {
+                testAudio.pause();
+                isAudioUnlocked = true;
+                console.log("🔊 Sistema de audio desbloqueado correctamente.");
+            }).catch(err => {
+                console.warn("Esperando interacción del usuario para activar el audio...", err);
+            });
+
+            document.removeEventListener('click', unlockAudioSystem);
+            document.removeEventListener('touchstart', unlockAudioSystem);
+            document.removeEventListener('keydown', unlockAudioSystem);
+        }
+
+        document.addEventListener('click', unlockAudioSystem);
+        document.addEventListener('touchstart', unlockAudioSystem);
+        document.addEventListener('keydown', unlockAudioSystem);
+
+
+        function handleCharacterCollisions() {
+            if (isGameOver) return;
+            const hitboxRatio = 0.35; 
+
+            for (let i = 0; i < activeCharacters.length; i++) {
+                for (let j = i + 1; j < activeCharacters.length; j++) {
+                    const c1 = activeCharacters[i];
+                    const c2 = activeCharacters[j];
+
+                    const c1Center = c1.size / 2;
+                    const c2Center = c2.size / 2;
+
+                    const c1x = c1.posX + c1Center;
+                    const c1y = c1.posY + c1Center;
+                    const c2x = c2.posX + c2Center;
+                    const c2y = c2.posY + c2Center;
+
+                    const minDist = (c1Center + c2Center) * hitboxRatio;
+
+                    let dx = c2x - c1x;
+                    let dy = c2y - c1y;
+                    let distance = Math.hypot(dx, dy);
+
+                    if (distance < minDist) {
+                        if (distance === 0) {
+                            dx = 1; dy = 0; distance = 1;
+                        }
+
+                        const nx = dx / distance;
+                        const ny = dy / distance;
+
+                        const overlap = (minDist - distance) / 2;
+                        if (!c1.isDragging) {
+                            c1.posX -= nx * overlap;
+                            c1.posY -= ny * overlap;
+                        }
+                        if (!c2.isDragging) {
+                            c2.posX += nx * overlap;
+                            c2.posY += ny * overlap;
+                        }
+
+                        const kx = c1.vx - c2.vx;
+                        const ky = c1.vy - c2.vy;
+                        const p = 2 * (nx * kx + ny * ky) / 2;
+
+                        if (p > 0) {
+                            const elasticity = 0.85;
+
+                            if (!c1.isDragging) {
+                                c1.vx -= p * nx * elasticity;
+                                c1.vy -= p * ny * elasticity;
+                            }
+                            if (!c2.isDragging) {
+                                c2.vx += p * nx * elasticity;
+                                c2.vy += p * ny * elasticity;
+                            }
+
+                            if (p > minVelocityForBounce) {
+                                registerGlobalBounce(c1);
+                                registerGlobalBounce(c2);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        let pendingSpawns = 0;
+
+        function registerGlobalBounce(characterInstance) {
+            if (isGameOver) return;
+
+            score++;
+            counterDisplay.textContent = score;
+            characterInstance.triggerBounceEffect();
+
+            if (score >= currentTarget) {
+                pendingSpawns++;
+                currentTarget += targetIncrement;
+                targetIncrement += 10;
+            }
+        }
+
+        function processPendingSpawns() {
+            while (pendingSpawns > 0) {
+                if (totalCharactersSpawned >= WIN_TARGET) {
+                    pendingSpawns = 0;
+                    triggerVictorySequence();
+                    return;
+                }
+                spawnCharacter();
+                pendingSpawns--;
+            }
+        }
+
+        function spawnCharacter() {
+            if (totalCharactersSpawned >= WIN_TARGET) {
+                triggerVictorySequence();
+                return;
+            }
+
+            const randomIndex = Math.floor(Math.random() * modelPool.length);
+            const selectedModelData = modelPool[randomIndex];
+            
+            const newChar = new Character(selectedModelData);
+            activeCharacters.push(newChar);
+            totalCharactersSpawned++;
+
+            playPopSound(1.0);
+        }
+
+        function triggerVictorySequence() {
+            if (isGameOver) return;
+            isGameOver = true;
+
+            const totalActive = activeCharacters.length;
+            if (totalActive === 0) {
+                showVictoryScreen();
+                return;
+            }
+
+            let index = 0;
+            const interval = setInterval(() => {
+                if (index < activeCharacters.length) {
+                    const char = activeCharacters[index];
+                    
+                    const pitchProgress = totalActive > 1 ? (index / (totalActive - 1)) : 1;
+                    const currentPitch = 1.0 + (pitchProgress * 0.9); 
+
+                    playPopSound(currentPitch);
+                    char.popOut();
+
+                    index++;
+                } else {
+                    clearInterval(interval);
+                    activeCharacters.length = 0;
+                    setTimeout(showVictoryScreen, 400);
+                }
+            }, 120);
+        }
+
+        function playVictoryAnimationSequence(viewer, anims, skipEntry = false) {
+    if (!anims) return;
+
+    const { entry, actionStart, actionLoop } = anims;
+    const crossfadeTime = 0.4;
+
+    function playClip(clipName, onComplete) {
+        if (!clipName) {
+            if (onComplete) onComplete();
+            return;
+        }
+
+        viewer.animationName = clipName;
+        let isTransitioning = false;
+
+        function checkFrame() {
+            if (isTransitioning) return;
+
+            const duration = viewer.duration || 0;
+            const currentTime = viewer.currentTime || 0;
+
+            if (duration > 0 && currentTime >= Math.max(0, duration - crossfadeTime)) {
+                isTransitioning = true;
+                if (onComplete) onComplete();
+            } else {
+                requestAnimationFrame(checkFrame);
+            }
+        }
+
+        setTimeout(() => {
+            requestAnimationFrame(checkFrame);
+        }, 60);
+    }
+
+    
+    if (skipEntry) {
+        playClip(actionStart, () => {
+            if (actionLoop) viewer.animationName = actionLoop;
+        });
+    } else { 
+        playClip(entry, () => {
+            playClip(actionStart, () => {
+                if (actionLoop) viewer.animationName = actionLoop;
+            });
+        });
+    }
+}
+
+function spawnVictoryCharacter(index) {
+    const winModel = winModelPool[Math.floor(Math.random() * winModelPool.length)];
+    const pos = victoryPositions[index % victoryPositions.length];
+
+    const charDiv = document.createElement('div');
+    charDiv.className = 'victory-char-item';
+    charDiv.style.left = pos.left;
+    charDiv.style.top = pos.top;
+
+    charDiv.innerHTML = `
+        <model-viewer 
+            src="${winModel.src}"
+            autoplay
+            auto-rotate
+            camera-controls
+            animation-crossfade-duration="400"
+            interaction-prompt="none"
+            style="width: 100%; height: 100%; transform: translateY(${winModel.offsetY}px);">
+        </model-viewer>
+    `;
+
+    victoryScreen.appendChild(charDiv);
+
+    const viewer = charDiv.querySelector('model-viewer');
+    viewer.addEventListener('load', () => {
+        
+        const skipEntry = index > 0;
+        playVictoryAnimationSequence(viewer, winModel.animations, skipEntry);
+    });
+
+    
+    playPopSound(1.0 + (index * 0.15));
+}
+
+
+      
+        function showVictoryScreen() {
+    
+    if (victorySpawnTimer) clearInterval(victorySpawnTimer);
+
+    playVictorySound();
+    victoryScreen.classList.add('active');
+
+    victoryCharsCount = 0;
+
+    
+    spawnVictoryCharacter(0);
+    victoryCharsCount++;
+
+    
+    const SPAWN_INTERVAL = 6000; 
+    const MAX_VICTORY_CHARS = 6;
+
+    victorySpawnTimer = setInterval(() => {
+        if (victoryCharsCount < MAX_VICTORY_CHARS) {
+            spawnVictoryCharacter(victoryCharsCount);
+            victoryCharsCount++;
+        } else {
+            clearInterval(victorySpawnTimer);
+        }
+    }, SPAWN_INTERVAL);
+}
+        function resetGame() {
+            
+            stopVictorySound();
+
+            if (victorySpawnTimer) clearInterval(victorySpawnTimer);
+
+            const victoryChars = victoryScreen.querySelectorAll('.victory-char-item');
+            victoryChars.forEach(el => el.remove());
+
+            victoryScreen.classList.remove('active');
+
+
+            activeCharacters.forEach(char => char.destroyImmediately());
+            activeCharacters.length = 0;
+
+            score = 0;
+            currentTarget = 10;
+            targetIncrement = 15;
+            totalCharactersSpawned = 0;
+            pendingSpawns = 0;
+            isGameOver = false;
+
+            counterDisplay.textContent = '0';
+
+            spawnCharacter();
+        }
+
+        restartBtn.addEventListener('click', resetGame);
+
+        
+        function gameLoop() {
+            if (!isGameOver) {
+                for (let i = 0; i < activeCharacters.length; i++) {
+                    activeCharacters[i].update();
+                }
+                handleCharacterCollisions();
+                processPendingSpawns();
+            }
+
+            requestAnimationFrame(gameLoop);
+        }
+        function playPopSound(pitch = 1.0) {
+    try {
+        const pop = new Audio('pop.mp3');
+        pop.volume = 0.6;
+        pop.playbackRate = pitch;
+        pop.play().catch(err => console.warn("No se pudo reproducir pop.mp3:", err));
+    } catch (e) {
+        console.error("Error en playPopSound:", e);
+    }
+}
+
+        function playVictorySound() {
+            try {
+                
+                if (victorySound) {
+                    victorySound.pause();
+                    victorySound.currentTime = 0;
+                }
+
+                
+                victorySound = new Audio('sas.mp3');
+                victorySound.volume = 0.1;
+
+                const playPromise = victorySound.play();
+
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        console.error("Error al reproducir 'sas.mp3' (verifica la ruta del archivo):", error);
+                    });
+                }
+            } catch (e) {
+                console.error("Excepción en playVictorySound:", e);
+            }
+        }
+
+        function stopVictorySound() {
+            if (victorySound) {
+                victorySound.pause();
+                victorySound.currentTime = 0;
+                victorySound = null; 
+            }
+        }
+
+        spawnCharacter();
+        gameLoop();
+    </script>
 </body>
 </html>
