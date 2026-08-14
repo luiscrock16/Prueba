@@ -38,30 +38,40 @@
             pointer-events: none;
             line-height: 1;
         }
+                
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        
         .game-character-item {
             position: absolute;
+            top: 0;
+            left: 0;
             width: 90px;
             height: 90px;
-            border-radius: 50%; 
+            border-radius: 50%;
             cursor: pointer;
             user-select: none;
             touch-action: manipulation;
             z-index: 10;
+            will-change: transform; 
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
-            transition: transform 0.1s ease;
         }
-        
+
         .game-character-item img {
             width: 100%;
             height: 100%;
             border-radius: 50%;
-            object-fit: cover; 
+            object-fit: cover;
             pointer-events: none;
         }
-        
-        /* Efecto de toque */
+
         .game-character-item:active {
-            transform: scale(0.9);
+            transform: translate(-50%, -50%) scale(0.85);
         }
 
         .character {
@@ -105,69 +115,69 @@
             100% { transform: scale(1); }
         }
 
-        
-#victory-screen {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(15, 15, 22, 0.92);
-    backdrop-filter: blur(8px);
-    z-index: 100;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.6s ease;
-    overflow: hidden;
-}
+                
+        #victory-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(15, 15, 22, 0.92);
+            backdrop-filter: blur(8px);
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.6s ease;
+            overflow: hidden;
+        }
 
-#victory-screen.active {
-    opacity: 1;
-    pointer-events: all;
-}
+        #victory-screen.active {
+            opacity: 1;
+            pointer-events: all;
+        }
 
-.victory-ui-content {
-    position: relative;
-    z-index: 110; 
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    pointer-events: auto;
-}
+        .victory-ui-content {
+            position: relative;
+            z-index: 110; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            pointer-events: auto;
+        }
 
-.victory-title {
-    color: #ffffff;
-    font-size: 2.8rem;
-    font-weight: 900;
-    text-transform: uppercase;
-    letter-spacing: 3px;
-    margin-bottom: 10px;
-    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
-}
+        .victory-title {
+            color: #ffffff;
+            font-size: 2.8rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 10px;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+        }
 
-.victory-subtitle {
-    color: #a0a0c0;
-    font-size: 1.1rem;
-    margin-bottom: 30px;
-}
+        .victory-subtitle {
+            color: #a0a0c0;
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+        }
 
 
-.victory-char-item {
-    position: absolute;
-    width: 320px;
-    height: 320px;
-    z-index: 105;
-    animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-}
+        .victory-char-item {
+            position: absolute;
+            width: 320px;
+            height: 320px;
+            z-index: 105;
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
 
-@keyframes popIn {
-    0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
-    100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-}   
+        @keyframes popIn {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }   
 
         .restart-btn {
             background: linear-gradient(135deg, #6366f1, #8b5cf6);
@@ -207,15 +217,7 @@
 
     <script>
         
-        const modelPool = [
-            { src: 'test2/scene.glb',  scale: 1.0, offsetY: 0 },
-            { src: 'test2/scene2.glb', scale: 2.0, offsetY: 18 },
-            { src: 'test2/scene3.glb', scale: 1.4, offsetY: 40 },
-            { src: 'test2/scene5.glb', scale: 2.0, offsetY: 30 }
-        ];
-
-        
-        const winModelPool = [
+const winModelPool = [
             { 
                 src: 'test2/scene.glb',  
                 scale: 1.2, 
@@ -268,442 +270,246 @@
             }
         ];
 
-        
-        const WIN_TARGET = 35;
-        let totalCharactersSpawned = 0;
-        let score = 0;
-        let currentTarget = 10;
-        let targetIncrement = 15;
-        let isGameOver = false;
+const victoryPositions = [
+    { left: '50%', top: '80%' },
+    { left: '18%', top: '30%' },
+    { left: '82%', top: '30%' },
+    { left: '18%', top: '70%' },
+    { left: '82%', top: '70%' },
+    { left: '50%', top: '22%' }
+];
 
-        const counterDisplay = document.getElementById('counter');
-        const victoryScreen = document.getElementById('victory-screen');
-        const victoryModelContainer = document.getElementById('victory-model-container');
-        const restartBtn = document.getElementById('restart-btn');
-        const activeCharacters = [];
-
-        
-        const gravity = 0.45;
-        const frictionX = 0.99;
-        const bounciness = -0.7;
-        const minVelocityForBounce = 3.5;
-        const baseCharSize = 160;
-        
-        
-        let victorySpawnTimer = null;
-        let victoryCharsCount = 0;
-        let victorySound = null;
-        let isAudioUnlocked = false;
-
-        
-        const victoryPositions = [
-            { left: '50%', top: '80%' }, 
-            { left: '18%', top: '30%' }, 
-            { left: '82%', top: '30%' }, 
-            { left: '18%', top: '70%' }, 
-            { left: '82%', top: '70%' }, 
-            { left: '50%', top: '22%' }  
-        ];
+const isMobileDevice = () => window.innerWidth <= 768 || ('ontouchstart' in window);
+const MAX_VICTORY_CHARS = isMobileDevice() ? 3 : 6;
+const SPAWN_INTERVAL = 6000;
 
 
-        class Character {
-            constructor(modelData) {
-                this.modelSrc = modelData.src;
-                this.modelScale = modelData.scale || 1.0; 
-                this.offsetY = modelData.offsetY || 0; 
+let score = 0;
+let currentTarget = 1000;
+let isGameOver = false;
 
-                this.size = baseCharSize * this.modelScale;
+let victorySpawnTimer = null;
+let victoryCharsCount = 0;
 
-                this.posX = (window.innerWidth - this.size) / 2 + (Math.random() * 80 - 40);
-                this.posY = (window.innerHeight - this.size) / 4;
 
-                this.vx = (Math.random() - 0.5) * 8;
-                this.vy = 0;
+let physicsLoopId = null;
+const activeGameItems = [];
+const GRAVITY = 0.45;           
+const BOUNCE_DAMPING = 0.85;     
+const ITEM_RADIUS = 45;         
 
-                this.isDragging = false;
-                this.dragOffsetX = 0;
-                this.dragOffsetY = 0;
-                this.lastMouseX = 0;
-                this.lastMouseY = 0;
+let draggedItem = null;
+let lastPointerX = 0;
+let lastPointerY = 0;
 
-                this.bouncedX = false;
-                this.bouncedY = false;
 
-                this.createElement();
-                this.bindEvents();
-            }
+let gameContainer = null;
+let victoryScreen = null;
+let counterDisplay = null;
+let restartBtn = null;
 
-            createElement() {
-                this.element = document.createElement('div');
-                this.element.className = 'character';
-                
-                this.element.style.width = `${this.size}px`;
-                this.element.style.height = `${this.size}px`;
-                this.element.style.left = `${this.posX}px`;
-                this.element.style.top = `${this.posY}px`;
 
-                this.element.innerHTML = `
-                    <model-viewer 
-                        src="${this.modelSrc}"
-                        autoplay
-                        animation-name="Idle-Base"
-                        interaction-prompt="none"
-                        style="transform: translateY(${this.offsetY}px);">
-                    </model-viewer>
-                    <div class="drag-overlay"></div>
-                `;
 
-                document.body.appendChild(this.element);
-            }
+let victorySound = null;
+let isAudioUnlocked = false;
 
-            bindEvents() {
-                this.element.addEventListener('pointerdown', (e) => {
-                    if (isGameOver) return;
-                    this.isDragging = true;
-                    this.element.setPointerCapture(e.pointerId);
+function unlockAudioSystem() {
+    if (isAudioUnlocked) return;
 
-                    this.dragOffsetX = e.clientX - this.posX;
-                    this.dragOffsetY = e.clientY - this.posY;
+    const testAudio = new Audio('sas.mp3');
+    testAudio.volume = 0.01;
 
-                    this.lastMouseX = e.clientX;
-                    this.lastMouseY = e.clientY;
+    testAudio.play().then(() => {
+        testAudio.pause();
+        isAudioUnlocked = true;
+    }).catch(() => {});
 
-                    this.vx = 0;
-                    this.vy = 0;
-                });
+    document.removeEventListener('click', unlockAudioSystem);
+    document.removeEventListener('touchstart', unlockAudioSystem);
+    document.removeEventListener('keydown', unlockAudioSystem);
+}
 
-                this.element.addEventListener('pointermove', (e) => {
-                    if (!this.isDragging || isGameOver) return;
+document.addEventListener('click', unlockAudioSystem);
+document.addEventListener('touchstart', unlockAudioSystem);
+document.addEventListener('keydown', unlockAudioSystem);
 
-                    this.vx = e.clientX - this.lastMouseX;
-                    this.vy = e.clientY - this.lastMouseY;
+function playPopSound(pitch = 1.0) {
+    try {
+        const pop = new Audio('pop.mp3');
+        pop.volume = 0.6;
+        pop.playbackRate = pitch;
+        pop.play().catch(() => {});
+    } catch (e) {}
+}
 
-                    this.lastMouseX = e.clientX;
-                    this.lastMouseY = e.clientY;
-
-                    this.posX = e.clientX - this.dragOffsetX;
-                    this.posY = e.clientY - this.dragOffsetY;
-
-                    const maxX = window.innerWidth - this.size;
-                    const maxY = window.innerHeight - this.size;
-                    this.posX = Math.max(0, Math.min(this.posX, maxX));
-                    this.posY = Math.max(0, Math.min(this.posY, maxY));
-
-                    this.element.style.left = `${this.posX}px`;
-                    this.element.style.top = `${this.posY}px`;
-                });
-
-                const endDrag = (e) => {
-                    if (!this.isDragging) return;
-                    this.isDragging = false;
-                    try { this.element.releasePointerCapture(e.pointerId); } catch(err){}
-                };
-
-                this.element.addEventListener('pointerup', endDrag);
-                this.element.addEventListener('pointercancel', endDrag);
-            }
-
-            update() {
-                if (isGameOver) return;
-
-                const maxX = window.innerWidth - this.size;
-                const maxY = window.innerHeight - this.size;
-
-                if (!this.isDragging) {
-                    this.vy += gravity;
-                    this.vx *= frictionX;
-
-                    this.posX += this.vx;
-                    this.posY += this.vy;
-
-                    const currentSpeed = Math.hypot(this.vx, this.vy);
-
-                    if (this.posX <= 0 || this.posX >= maxX) {
-                        if (!this.bouncedX && currentSpeed > minVelocityForBounce) {
-                            registerGlobalBounce(this);
-                        }
-                        this.vx *= bounciness;
-                        this.posX = Math.max(0, Math.min(this.posX, maxX));
-                        this.bouncedX = true;
-                    } else {
-                        this.bouncedX = false;
-                    }
-
-                    if (this.posY >= maxY) {
-                        if (!this.bouncedY && Math.abs(this.vy) > minVelocityForBounce) {
-                            registerGlobalBounce(this);
-                        }
-                        this.vy *= bounciness;
-                        this.posY = maxY;
-
-                        if (Math.abs(this.vy) < 1) this.vy = 0;
-                        this.bouncedY = true;
-                    } 
-                    else if (this.posY <= 0) {
-                        if (!this.bouncedY && Math.abs(this.vy) > minVelocityForBounce) {
-                            registerGlobalBounce(this);
-                        }
-                        this.vy *= bounciness;
-                        this.posY = 0;
-                        this.bouncedY = true;
-                    } else {
-                        this.bouncedY = false;
-                    }
-
-                    this.element.style.left = `${this.posX}px`;
-                    this.element.style.top = `${this.posY}px`;
-                }
-            }
-
-            triggerBounceEffect() {
-                this.element.classList.remove('bounce-impact');
-                void this.element.offsetWidth;
-                this.element.classList.add('bounce-impact');
-            }
-
-            popOut() {
-                this.element.classList.add('popping-out');
-                setTimeout(() => {
-                    if (this.element && this.element.parentNode) {
-                        this.element.parentNode.removeChild(this.element);
-                    }
-                }, 150);
-            }
-
-            destroyImmediately() {
-                if (this.element && this.element.parentNode) {
-                    this.element.parentNode.removeChild(this.element);
-                }
-            }
-        }
-        const POOL_SIZE = isMobileDevice() ? 6 : 10;
-        const characterPool = [];
-        
-        // Inicializar la reserva de objetos UNA SOLA VEZ al cargar el juego
-        function initCharacterPool() {
-            const gameContainer = document.getElementById('game-container'); // Tu contenedor del gameplay
-        
-            for (let i = 0; i < POOL_SIZE; i++) {
-                const charDiv = document.createElement('div');
-                charDiv.className = 'game-character-item';
-                charDiv.style.position = 'absolute';
-                charDiv.style.display = 'none'; // Oculto inicialmente
-        
-                // Un único <model-viewer> ligero y permanente por ranura
-                charDiv.innerHTML = `
-                    <model-viewer 
-                        autoplay
-                        interaction-prompt="none"
-                        shadow-intensity="0"
-                        render-scale="0.75"
-                        style="width: 100%; height: 100%;">
-                    </model-viewer>
-                `;
-        
-                gameContainer.appendChild(charDiv);
-        
-                // Guardamos la ranura en el Pool
-                characterPool.push({
-                    element: charDiv,
-                    viewer: charDiv.querySelector('model-viewer'),
-                    inUse: false
-                });
-            }
-        }
-        
-        // Obtener una ranura libre del Pool
-        function getFreeCharacterFromPool() {
-            return characterPool.find(char => !char.inUse) || null;
-        }
-        
-        // Llama a esto al cargar la ventana o iniciar el juego
-        window.addEventListener('DOMContentLoaded', initCharacterPool);
-        
-        function unlockAudioSystem() {
-            if (isAudioUnlocked) return;
-
-            
-            const testAudio = new Audio('sas.mp3');
-            testAudio.volume = 0.01;
-
-            testAudio.play().then(() => {
-                testAudio.pause();
-                isAudioUnlocked = true;
-                console.log("🔊 Sistema de audio desbloqueado correctamente.");
-            }).catch(err => {
-                console.warn("Esperando interacción del usuario para activar el audio...", err);
-            });
-
-            document.removeEventListener('click', unlockAudioSystem);
-            document.removeEventListener('touchstart', unlockAudioSystem);
-            document.removeEventListener('keydown', unlockAudioSystem);
+function playVictorySound() {
+    try {
+        if (victorySound) {
+            victorySound.pause();
+            victorySound.currentTime = 0;
         }
 
-        document.addEventListener('click', unlockAudioSystem);
-        document.addEventListener('touchstart', unlockAudioSystem);
-        document.addEventListener('keydown', unlockAudioSystem);
+        victorySound = new Audio('sas.mp3');
+        victorySound.volume = 0.1;
+        victorySound.play().catch(() => {});
+    } catch (e) {}
+}
+
+function stopVictorySound() {
+    if (victorySound) {
+        victorySound.pause();
+        victorySound.currentTime = 0;
+        victorySound = null;
+    }
+}
 
 
-        function handleCharacterCollisions() {
-            if (isGameOver) return;
-            const hitboxRatio = 0.35; 
-
-            for (let i = 0; i < activeCharacters.length; i++) {
-                for (let j = i + 1; j < activeCharacters.length; j++) {
-                    const c1 = activeCharacters[i];
-                    const c2 = activeCharacters[j];
-
-                    const c1Center = c1.size / 2;
-                    const c2Center = c2.size / 2;
-
-                    const c1x = c1.posX + c1Center;
-                    const c1y = c1.posY + c1Center;
-                    const c2x = c2.posX + c2Center;
-                    const c2y = c2.posY + c2Center;
-
-                    const minDist = (c1Center + c2Center) * hitboxRatio;
-
-                    let dx = c2x - c1x;
-                    let dy = c2y - c1y;
-                    let distance = Math.hypot(dx, dy);
-
-                    if (distance < minDist) {
-                        if (distance === 0) {
-                            dx = 1; dy = 0; distance = 1;
-                        }
-
-                        const nx = dx / distance;
-                        const ny = dy / distance;
-
-                        const overlap = (minDist - distance) / 2;
-                        if (!c1.isDragging) {
-                            c1.posX -= nx * overlap;
-                            c1.posY -= ny * overlap;
-                        }
-                        if (!c2.isDragging) {
-                            c2.posX += nx * overlap;
-                            c2.posY += ny * overlap;
-                        }
-
-                        const kx = c1.vx - c2.vx;
-                        const ky = c1.vy - c2.vy;
-                        const p = 2 * (nx * kx + ny * ky) / 2;
-
-                        if (p > 0) {
-                            const elasticity = 0.85;
-
-                            if (!c1.isDragging) {
-                                c1.vx -= p * nx * elasticity;
-                                c1.vy -= p * ny * elasticity;
-                            }
-                            if (!c2.isDragging) {
-                                c2.vx += p * nx * elasticity;
-                                c2.vy += p * ny * elasticity;
-                            }
-
-                            if (p > minVelocityForBounce) {
-                                registerGlobalBounce(c1);
-                                registerGlobalBounce(c2);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        let pendingSpawns = 0;
-
-        function registerGlobalBounce(characterInstance) {
-            if (isGameOver) return;
-
-            score++;
-            counterDisplay.textContent = score;
-            characterInstance.triggerBounceEffect();
-
-            if (score >= currentTarget) {
-                pendingSpawns++;
-                currentTarget += targetIncrement;
-                targetIncrement += 10;
-            }
-        }
-
-        function processPendingSpawns() {
-            while (pendingSpawns > 0) {
-                if (totalCharactersSpawned >= WIN_TARGET) {
-                    pendingSpawns = 0;
-                    triggerVictorySequence();
-                    return;
-                }
-                spawnCharacter();
-                pendingSpawns--;
-            }
-        }
-
-        function spawnCharacter() {
+function addPointAndCheckWin() {
     if (isGameOver) return;
 
-    const gameContainer = document.getElementById('game-container'); // O tu contenedor principal
+    score++;
+    if (counterDisplay) counterDisplay.textContent = score;
+
+    playPopSound(1.0 + Math.min(score * 0.05, 0.5));
+
+    if (score >= currentTarget) {
+        isGameOver = true;
+        showVictoryScreen();
+    }
+}
+
+function updatePhysics() {
+    if (isGameOver) return;
+
+    const screenWidth = window.innerWidth;
+    const screenHeight = window.innerHeight;
+
+    for (let i = 0; i < activeGameItems.length; i++) {
+        const item = activeGameItems[i];
+
+   
+        if (item.isDragging) continue;
+
+
+        item.vy += GRAVITY;
+        item.x += item.vx;
+        item.y += item.vy;
+
+        let bounced = false;
+
+        if (item.x + ITEM_RADIUS >= screenWidth) {
+            item.x = screenWidth - ITEM_RADIUS;
+            item.vx = -item.vx * BOUNCE_DAMPING;
+            bounced = true;
+        }
+        
+        else if (item.x - ITEM_RADIUS <= 0) {
+            item.x = ITEM_RADIUS;
+            item.vx = -item.vx * BOUNCE_DAMPING;
+            bounced = true;
+        }
+
+        
+        if (item.y + ITEM_RADIUS >= screenHeight) {
+            item.y = screenHeight - ITEM_RADIUS;
+            item.vy = -item.vy * BOUNCE_DAMPING;
+            item.vx *= 0.96; 
+            bounced = true;
+        }
+        
+        else if (item.y - ITEM_RADIUS <= 0) {
+            item.y = ITEM_RADIUS;
+            item.vy = -item.vy * BOUNCE_DAMPING;
+            bounced = true;
+        }
+
+       
+        if (bounced && (Math.abs(item.vx) > 1 || Math.abs(item.vy) > 1)) {
+            addPointAndCheckWin();
+        }
+
+        
+        item.element.style.transform = `translate3d(${item.x - ITEM_RADIUS}px, ${item.y - ITEM_RADIUS}px, 0px)`;
+    }
+
+    physicsLoopId = requestAnimationFrame(updatePhysics);
+}
+
+
+
+function spawnCharacter() {
+    if (isGameOver || !gameContainer) return;
 
     const charDiv = document.createElement('div');
     charDiv.className = 'game-character-item';
-
-    // Posición aleatoria en pantalla (dejando margen con los bordes)
-    const posX = Math.random() * 70 + 15; // entre 15% y 85%
-    const posY = Math.random() * 60 + 20; // entre 20% y 80%
-    charDiv.style.left = `${posX}%`;
-    charDiv.style.top = `${posY}%`;
-
-    // Asignamos la imagen PNG
     charDiv.innerHTML = `<img src="imagenes/2.png" alt="Personaje" draggable="false">`;
 
-    // Evento de toque/clic rápido
+    const startX = Math.random() * (window.innerWidth - 180) + 90;
+    const startY = 150;
+
+    const itemData = {
+        element: charDiv,
+        x: startX,
+        y: startY,
+        vx: (Math.random() - 0.5) * 6,
+        vy: 0,
+        isDragging: false
+    };
+
+    
     charDiv.addEventListener('pointerdown', (e) => {
+        if (isGameOver) return;
         e.preventDefault();
-        popCharacter(charDiv);
+
+        itemData.isDragging = true;
+        draggedItem = itemData;
+        lastPointerX = e.clientX;
+        lastPointerY = e.clientY;
+
+        
+        itemData.vx = 0;
+        itemData.vy = 0;
+
+        charDiv.style.cursor = 'grabbing';
+        playPopSound(1.2);
     });
 
     gameContainer.appendChild(charDiv);
-    playPopSound();
+    activeGameItems.push(itemData);
 }
-        function recycleCharacter(pooledChar) {
-            if (!pooledChar) return;
-        
-            // Se oculta y queda libre para el siguiente spawn
-            pooledChar.inUse = false;
-            pooledChar.element.style.display = 'none';
-        }
 
-        function triggerVictorySequence() {
-            if (isGameOver) return;
-            isGameOver = true;
 
-            const totalActive = activeCharacters.length;
-            if (totalActive === 0) {
-                showVictoryScreen();
-                return;
-            }
+window.addEventListener('pointermove', (e) => {
+    if (!draggedItem || isGameOver) return;
 
-            let index = 0;
-            const interval = setInterval(() => {
-                if (index < activeCharacters.length) {
-                    const char = activeCharacters[index];
-                    
-                    const pitchProgress = totalActive > 1 ? (index / (totalActive - 1)) : 1;
-                    const currentPitch = 1.0 + (pitchProgress * 0.9); 
 
-                    playPopSound(currentPitch);
-                    char.popOut();
+    const deltaX = e.clientX - lastPointerX;
+    const deltaY = e.clientY - lastPointerY;
 
-                    index++;
-                } else {
-                    clearInterval(interval);
-                    activeCharacters.length = 0;
-                    setTimeout(showVictoryScreen, 400);
-                }
-            }, 120);
-        }
+    draggedItem.x = e.clientX;
+    draggedItem.y = e.clientY;
 
-        function playVictoryAnimationSequence(viewer, anims, skipEntry = false) {
+
+    draggedItem.vx = deltaX * 0.8;
+    draggedItem.vy = deltaY * 0.8;
+
+    lastPointerX = e.clientX;
+    lastPointerY = e.clientY;
+
+    
+    draggedItem.element.style.transform = `translate3d(${draggedItem.x - ITEM_RADIUS}px, ${draggedItem.y - ITEM_RADIUS}px, 0px)`;
+});
+
+window.addEventListener('pointerup', () => {
+    if (draggedItem) {
+        draggedItem.isDragging = false;
+        draggedItem.element.style.cursor = 'grab';
+        draggedItem = null;
+    }
+});
+
+
+function playVictoryAnimationSequence(viewer, anims, skipEntry = false) {
     if (!anims) return;
 
     const { entry, actionStart, actionLoop } = anims;
@@ -737,7 +543,6 @@
         }, 60);
     }
 
-    
     if (skipEntry) {
         playClip(actionStart, () => {
             if (actionLoop) viewer.animationName = actionLoop;
@@ -752,6 +557,8 @@
 }
 
 function spawnVictoryCharacter(index) {
+    if (!victoryScreen) return;
+
     const winModel = winModelPool[Math.floor(Math.random() * winModelPool.length)];
     const pos = victoryPositions[index % victoryPositions.length];
 
@@ -760,14 +567,21 @@ function spawnVictoryCharacter(index) {
     charDiv.style.left = pos.left;
     charDiv.style.top = pos.top;
 
+    const isMain = (index === 0);
+    const shadowAttr = isMain ? 'shadow-intensity="1" shadow-softness="0.8"' : 'shadow-intensity="0"';
+    const controlsAttr = isMain ? 'camera-controls auto-rotate' : '';
+    const renderScaleAttr = isMain ? 'render-scale="1"' : 'render-scale="0.75"';
+
     charDiv.innerHTML = `
         <model-viewer 
             src="${winModel.src}"
             autoplay
-            auto-rotate
-            camera-controls
             animation-crossfade-duration="400"
             interaction-prompt="none"
+            power-preference="high-performance"
+            ${shadowAttr}
+            ${controlsAttr}
+            ${renderScaleAttr}
             style="width: 100%; height: 100%; transform: translateY(${winModel.offsetY}px);">
         </model-viewer>
     `;
@@ -776,33 +590,24 @@ function spawnVictoryCharacter(index) {
 
     const viewer = charDiv.querySelector('model-viewer');
     viewer.addEventListener('load', () => {
-        
-        const skipEntry = index > 0;
+        const skipEntry = !isMain;
         playVictoryAnimationSequence(viewer, winModel.animations, skipEntry);
     });
 
-    
     playPopSound(1.0 + (index * 0.15));
 }
 
-
-      
-        function showVictoryScreen() {
-    
+function showVictoryScreen() {
+    if (physicsLoopId) cancelAnimationFrame(physicsLoopId);
     if (victorySpawnTimer) clearInterval(victorySpawnTimer);
 
     playVictorySound();
-    victoryScreen.classList.add('active');
+    if (victoryScreen) victoryScreen.classList.add('active');
 
     victoryCharsCount = 0;
 
-    
     spawnVictoryCharacter(0);
     victoryCharsCount++;
-
-    
-    const SPAWN_INTERVAL = 6000; 
-    const MAX_VICTORY_CHARS = 6;
 
     victorySpawnTimer = setInterval(() => {
         if (victoryCharsCount < MAX_VICTORY_CHARS) {
@@ -813,106 +618,44 @@ function spawnVictoryCharacter(index) {
         }
     }, SPAWN_INTERVAL);
 }
-        function resetGame() {
-            
-            stopVictorySound();
-
-            if (victorySpawnTimer) clearInterval(victorySpawnTimer);
-
-            const victoryChars = victoryScreen.querySelectorAll('.victory-char-item');
-            victoryChars.forEach(el => el.remove());
-
-            victoryScreen.classList.remove('active');
 
 
-            activeCharacters.forEach(char => char.destroyImmediately());
-            activeCharacters.length = 0;
+function resetGame() {
+    stopVictorySound();
 
-            score = 0;
-            currentTarget = 10;
-            targetIncrement = 15;
-            totalCharactersSpawned = 0;
-            pendingSpawns = 0;
-            isGameOver = false;
+    if (physicsLoopId) cancelAnimationFrame(physicsLoopId);
+    if (victorySpawnTimer) clearInterval(victorySpawnTimer);
 
-            counterDisplay.textContent = '0';
+    if (victoryScreen) {
+        const victoryChars = victoryScreen.querySelectorAll('.victory-char-item');
+        victoryChars.forEach(el => el.remove());
+        victoryScreen.classList.remove('active');
+    }
 
-            spawnCharacter();
-        }
+    activeGameItems.forEach(item => item.element.remove());
+    activeGameItems.length = 0;
 
+    score = 0;
+    isGameOver = false;
+
+    if (counterDisplay) counterDisplay.textContent = '0';
+
+    spawnCharacter();
+    physicsLoopId = requestAnimationFrame(updatePhysics);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    gameContainer = document.getElementById('game-container') || document.body;
+    victoryScreen = document.getElementById('victory-screen');
+    counterDisplay = document.getElementById('counter');
+    restartBtn = document.getElementById('restart-btn');
+
+    if (restartBtn) {
         restartBtn.addEventListener('click', resetGame);
-
-        
-        function gameLoop() {
-            if (!isGameOver) {
-                for (let i = 0; i < activeCharacters.length; i++) {
-                    activeCharacters[i].update();
-                }
-                handleCharacterCollisions();
-                processPendingSpawns();
-            }
-
-            requestAnimationFrame(gameLoop);
-        }
-        function playPopSound(pitch = 1.0) {
-    try {
-        const pop = new Audio('pop.mp3');
-        pop.volume = 0.6;
-        pop.playbackRate = pitch;
-        pop.play().catch(err => console.warn("No se pudo reproducir pop.mp3:", err));
-    } catch (e) {
-        console.error("Error en playPopSound:", e);
     }
-}
 
-        function playVictorySound() {
-            try {
-                
-                if (victorySound) {
-                    victorySound.pause();
-                    victorySound.currentTime = 0;
-                }
-
-                
-                victorySound = new Audio('sas.mp3');
-                victorySound.volume = 0.1;
-
-                const playPromise = victorySound.play();
-
-                if (playPromise !== undefined) {
-                    playPromise.catch(error => {
-                        console.error("Error al reproducir 'sas.mp3' (verifica la ruta del archivo):", error);
-                    });
-                }
-            } catch (e) {
-                console.error("Excepción en playVictorySound:", e);
-            }
-        }
-
-        function stopVictorySound() {
-            if (victorySound) {
-                victorySound.pause();
-                victorySound.currentTime = 0;
-                victorySound = null; 
-            }
-        }
-        function popCharacter(element) {
-    playPopSound(1.2);
-    element.remove();
-
-    score++;
-    if (counterDisplay) counterDisplay.textContent = score;
-
-    
-    if (score >= currentTarget) {
-        showVictoryScreen();
-    } else {
-        spawnCharacter();
-    }
-}
-
-        spawnCharacter();
-        gameLoop();
+    resetGame();
+});
     </script>
 </body>
 </html>
