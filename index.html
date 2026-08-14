@@ -300,7 +300,6 @@ const GRAVITY = 0.45;
 const BOUNCE_DAMPING = 0.88;     
 const ITEM_RADIUS = 45;         
 
-
 let draggedItem = null;
 let lastPointerX = 0;
 let lastPointerY = 0;
@@ -379,10 +378,10 @@ function addPointAndCheckWin() {
         spawnCharacter();
     }
 
-    
+    // Condición de victoria
     if (score >= currentTarget) {
         isGameOver = true;
-        showVictoryScreen();
+        handleWinSequence();
     }
 }
 
@@ -457,27 +456,27 @@ function updatePhysics() {
 
         let bounced = false;
 
-        
+        // Rebote Borde Derecho
         if (item.x + ITEM_RADIUS >= screenWidth) {
             item.x = screenWidth - ITEM_RADIUS;
             item.vx = -item.vx * BOUNCE_DAMPING;
             bounced = true;
         }
-        
+        // Rebote Borde Izquierdo
         else if (item.x - ITEM_RADIUS <= 0) {
             item.x = ITEM_RADIUS;
             item.vx = -item.vx * BOUNCE_DAMPING;
             bounced = true;
         }
 
-        
+        // Rebote Suelo
         if (item.y + ITEM_RADIUS >= screenHeight) {
             item.y = screenHeight - ITEM_RADIUS;
             item.vy = -item.vy * BOUNCE_DAMPING;
             item.vx *= 0.96;
             bounced = true;
         }
-        
+        // Rebote Techo
         else if (item.y - ITEM_RADIUS <= 0) {
             item.y = ITEM_RADIUS;
             item.vy = -item.vy * BOUNCE_DAMPING;
@@ -493,6 +492,7 @@ function updatePhysics() {
 
     physicsLoopId = requestAnimationFrame(updatePhysics);
 }
+
 
 
 function spawnCharacter() {
@@ -562,6 +562,46 @@ window.addEventListener('pointerup', () => {
     }
 });
 
+
+
+function handleWinSequence() {
+    
+    if (physicsLoopId) cancelAnimationFrame(physicsLoopId);
+    if (draggedItem) {
+        draggedItem.isDragging = false;
+        draggedItem = null;
+    }
+
+    let delay = 250; 
+    let pitchStep = 1.0;
+
+    function removeNextItem() {
+        if (activeGameItems.length > 0) {
+            
+            const item = activeGameItems.pop();
+            if (item && item.element) {
+                item.element.remove();
+            }
+
+            
+            playPopSound(pitchStep);
+            pitchStep += 0.12;
+
+            
+            delay = Math.max(50, delay * 0.72);
+
+            setTimeout(removeNextItem, delay);
+        } else {
+            
+            setTimeout(() => {
+                showVictoryScreen();
+            }, 150);
+        }
+    }
+
+    
+    setTimeout(removeNextItem, 200);
+}
 
 function playVictoryAnimationSequence(viewer, anims, skipEntry = false) {
     if (!anims) return;
@@ -652,10 +692,9 @@ function spawnVictoryCharacter(index) {
 }
 
 function showVictoryScreen() {
-    if (physicsLoopId) cancelAnimationFrame(physicsLoopId);
     if (victorySpawnTimer) clearInterval(victorySpawnTimer);
 
-    
+    // Reproducir música/sonido de victoria
     playVictorySound();
 
     if (victoryScreen) victoryScreen.classList.add('active');
@@ -674,6 +713,7 @@ function showVictoryScreen() {
         }
     }, SPAWN_INTERVAL);
 }
+
 
 
 function resetGame() {
