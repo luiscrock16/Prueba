@@ -281,11 +281,13 @@ const victoryPositions = [
 
 const isMobileDevice = () => window.innerWidth <= 768 || ('ontouchstart' in window);
 const MAX_VICTORY_CHARS = isMobileDevice() ? 3 : 6;
+const MAX_GAME_ITEMS = isMobileDevice() ? 5 : 8000; 
+const SPAWN_EVERY_X_BOUNCES = 5;                 
 const SPAWN_INTERVAL = 6000;
 
 
 let score = 0;
-let currentTarget = 1000;
+let currentTarget = 30;
 let isGameOver = false;
 
 let victorySpawnTimer = null;
@@ -295,8 +297,9 @@ let victoryCharsCount = 0;
 let physicsLoopId = null;
 const activeGameItems = [];
 const GRAVITY = 0.45;           
-const BOUNCE_DAMPING = 0.85;     
+const BOUNCE_DAMPING = 0.88;     
 const ITEM_RADIUS = 45;         
+
 
 let draggedItem = null;
 let lastPointerX = 0;
@@ -351,7 +354,7 @@ function playVictorySound() {
 
         victorySound = new Audio('sas.mp3');
         victorySound.volume = 0.1;
-        victorySound.play().catch(() => {});
+        victorySound.play().catch((err) => console.log("Error al reproducir victoria:", err));
     } catch (e) {}
 }
 
@@ -364,17 +367,74 @@ function stopVictorySound() {
 }
 
 
+
 function addPointAndCheckWin() {
     if (isGameOver) return;
 
     score++;
     if (counterDisplay) counterDisplay.textContent = score;
 
-    playPopSound(1.0 + Math.min(score * 0.05, 0.5));
+    
+    if (score % SPAWN_EVERY_X_BOUNCES === 0 && activeGameItems.length < MAX_GAME_ITEMS) {
+        spawnCharacter();
+    }
 
+    
     if (score >= currentTarget) {
         isGameOver = true;
         showVictoryScreen();
+    }
+}
+
+
+function handleCircleCollisions() {
+    const minDistance = ITEM_RADIUS * 2;
+
+    for (let i = 0; i < activeGameItems.length; i++) {
+        for (let j = i + 1; j < activeGameItems.length; j++) {
+            const item1 = activeGameItems[i];
+            const item2 = activeGameItems[j];
+
+            const dx = item2.x - item1.x;
+            const dy = item2.y - item1.y;
+            const distance = Math.hypot(dx, dy);
+
+            if (distance < minDistance && distance > 0) {
+                const nx = dx / distance;
+                const ny = dy / distance;
+
+                const overlap = minDistance - distance;
+                if (!item1.isDragging && !item2.isDragging) {
+                    item1.x -= nx * (overlap / 2);
+                    item1.y -= ny * (overlap / 2);
+                    item2.x += nx * (overlap / 2);
+                    item2.y += ny * (overlap / 2);
+                } else if (item1.isDragging) {
+                    item2.x += nx * overlap;
+                    item2.y += ny * overlap;
+                } else {
+                    item1.x -= nx * overlap;
+                    item1.y -= ny * overlap;
+                }
+
+                const kx = item1.vx - item2.vx;
+                const ky = item1.vy - item2.vy;
+                const p = 2 * (nx * kx + ny * ky) / 2;
+
+                if (nx * kx + ny * ky > 0) {
+                    if (!item1.isDragging) {
+                        item1.vx -= p * nx * BOUNCE_DAMPING;
+                        item1.vy -= p * ny * BOUNCE_DAMPING;
+                    }
+                    if (!item2.isDragging) {
+                        item2.vx += p * nx * BOUNCE_DAMPING;
+                        item2.vy += p * ny * BOUNCE_DAMPING;
+                    }
+
+                    addPointAndCheckWin();
+                }
+            }
+        }
     }
 }
 
@@ -384,12 +444,12 @@ function updatePhysics() {
     const screenWidth = window.innerWidth;
     const screenHeight = window.innerHeight;
 
+    handleCircleCollisions();
+
     for (let i = 0; i < activeGameItems.length; i++) {
         const item = activeGameItems[i];
 
-   
         if (item.isDragging) continue;
-
 
         item.vy += GRAVITY;
         item.x += item.vx;
@@ -397,6 +457,7 @@ function updatePhysics() {
 
         let bounced = false;
 
+        
         if (item.x + ITEM_RADIUS >= screenWidth) {
             item.x = screenWidth - ITEM_RADIUS;
             item.vx = -item.vx * BOUNCE_DAMPING;
@@ -413,7 +474,7 @@ function updatePhysics() {
         if (item.y + ITEM_RADIUS >= screenHeight) {
             item.y = screenHeight - ITEM_RADIUS;
             item.vy = -item.vy * BOUNCE_DAMPING;
-            item.vx *= 0.96; 
+            item.vx *= 0.96;
             bounced = true;
         }
         
@@ -423,18 +484,15 @@ function updatePhysics() {
             bounced = true;
         }
 
-       
-        if (bounced && (Math.abs(item.vx) > 1 || Math.abs(item.vy) > 1)) {
+        if (bounced && (Math.abs(item.vx) > 0.8 || Math.abs(item.vy) > 0.8)) {
             addPointAndCheckWin();
         }
 
-        
         item.element.style.transform = `translate3d(${item.x - ITEM_RADIUS}px, ${item.y - ITEM_RADIUS}px, 0px)`;
     }
 
     physicsLoopId = requestAnimationFrame(updatePhysics);
 }
-
 
 
 function spawnCharacter() {
@@ -445,18 +503,17 @@ function spawnCharacter() {
     charDiv.innerHTML = `<img src="imagenes/2.png" alt="Personaje" draggable="false">`;
 
     const startX = Math.random() * (window.innerWidth - 180) + 90;
-    const startY = 150;
+    const startY = 120;
 
     const itemData = {
         element: charDiv,
         x: startX,
         y: startY,
-        vx: (Math.random() - 0.5) * 6,
-        vy: 0,
+        vx: (Math.random() - 0.5) * 8,
+        vy: (Math.random() - 0.5) * 4,
         isDragging: false
     };
 
-    
     charDiv.addEventListener('pointerdown', (e) => {
         if (isGameOver) return;
         e.preventDefault();
@@ -466,22 +523,21 @@ function spawnCharacter() {
         lastPointerX = e.clientX;
         lastPointerY = e.clientY;
 
-        
         itemData.vx = 0;
         itemData.vy = 0;
 
         charDiv.style.cursor = 'grabbing';
-        playPopSound(1.2);
     });
 
     gameContainer.appendChild(charDiv);
     activeGameItems.push(itemData);
-}
 
+   
+    playPopSound(1.0 + Math.min(activeGameItems.length * 0.1, 0.4));
+}
 
 window.addEventListener('pointermove', (e) => {
     if (!draggedItem || isGameOver) return;
-
 
     const deltaX = e.clientX - lastPointerX;
     const deltaY = e.clientY - lastPointerY;
@@ -489,14 +545,12 @@ window.addEventListener('pointermove', (e) => {
     draggedItem.x = e.clientX;
     draggedItem.y = e.clientY;
 
-
-    draggedItem.vx = deltaX * 0.8;
-    draggedItem.vy = deltaY * 0.8;
+    draggedItem.vx = deltaX * 0.85;
+    draggedItem.vy = deltaY * 0.85;
 
     lastPointerX = e.clientX;
     lastPointerY = e.clientY;
 
-    
     draggedItem.element.style.transform = `translate3d(${draggedItem.x - ITEM_RADIUS}px, ${draggedItem.y - ITEM_RADIUS}px, 0px)`;
 });
 
@@ -601,7 +655,9 @@ function showVictoryScreen() {
     if (physicsLoopId) cancelAnimationFrame(physicsLoopId);
     if (victorySpawnTimer) clearInterval(victorySpawnTimer);
 
+    
     playVictorySound();
+
     if (victoryScreen) victoryScreen.classList.add('active');
 
     victoryCharsCount = 0;
