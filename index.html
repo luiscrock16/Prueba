@@ -38,6 +38,31 @@
             pointer-events: none;
             line-height: 1;
         }
+        .game-character-item {
+            position: absolute;
+            width: 90px;
+            height: 90px;
+            border-radius: 50%; 
+            cursor: pointer;
+            user-select: none;
+            touch-action: manipulation;
+            z-index: 10;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+            transition: transform 0.1s ease;
+        }
+        
+        .game-character-item img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover; 
+            pointer-events: none;
+        }
+        
+        /* Efecto de toque */
+        .game-character-item:active {
+            transform: scale(0.9);
+        }
 
         .character {
             position: absolute;
@@ -615,33 +640,31 @@
         }
 
         function spawnCharacter() {
-            // 1. Pedir un personaje disponible en el Pool
-            const pooledChar = getFreeCharacterFromPool();
-        
-            
-            if (!pooledChar) {
-                console.warn("Límite de GPU alcanzado. Esperando a que se elimine un personaje...");
-                return;
-            }
-        
-            const winModel = winModelPool[Math.floor(Math.random() * winModelPool.length)];
-        
-            
-            pooledChar.inUse = true;
-            pooledChar.viewer.src = winModel.src;
-            
-            
-            pooledChar.element.style.left = `${Math.random() * 70 + 15}%`;
-            pooledChar.element.style.top = `${Math.random() * 70 + 15}%`;
-            
-            
-            pooledChar.element.style.display = 'block';
-        
-            
-            playVictoryAnimationSequence(pooledChar.viewer, winModel.animations, false);
-        
-            playPopSound();
-        }
+    if (isGameOver) return;
+
+    const gameContainer = document.getElementById('game-container'); // O tu contenedor principal
+
+    const charDiv = document.createElement('div');
+    charDiv.className = 'game-character-item';
+
+    // Posición aleatoria en pantalla (dejando margen con los bordes)
+    const posX = Math.random() * 70 + 15; // entre 15% y 85%
+    const posY = Math.random() * 60 + 20; // entre 20% y 80%
+    charDiv.style.left = `${posX}%`;
+    charDiv.style.top = `${posY}%`;
+
+    // Asignamos la imagen PNG
+    charDiv.innerHTML = `<img src="imagenes/2.png" alt="Personaje" draggable="false">`;
+
+    // Evento de toque/clic rápido
+    charDiv.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        popCharacter(charDiv);
+    });
+
+    gameContainer.appendChild(charDiv);
+    playPopSound();
+}
         function recycleCharacter(pooledChar) {
             if (!pooledChar) return;
         
@@ -873,6 +896,20 @@ function spawnVictoryCharacter(index) {
                 victorySound = null; 
             }
         }
+        function popCharacter(element) {
+    playPopSound(1.2);
+    element.remove();
+
+    score++;
+    if (counterDisplay) counterDisplay.textContent = score;
+
+    
+    if (score >= currentTarget) {
+        showVictoryScreen();
+    } else {
+        spawnCharacter();
+    }
+}
 
         spawnCharacter();
         gameLoop();
